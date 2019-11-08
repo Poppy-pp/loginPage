@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ env("APP_NAME") }}</title>
+	<script src="/assets/js/sweetalert2.min.js"></script>
+	<link rel="stylesheet" href="/assets/css/sweetalert2.min.css">
+	<script src="/assets/js/jquery.min.js"></script>
+	<link rel="stylesheet" type='text/css' href="/assets/css/bootstrap.css?v=2019">
+	<script src="/assets/vendor/layer-v3.1.1/layer.js"></script>
+	<script src="/assets/js/help.js"></script>
+	<style>
+		body {
+			margin: 0;
+			background-color: #fbfbfb;
+			text-align: center;
+		}
+
+		.lowin {
+			--color-primary: #44a0b3;
+			--color-grey: rgba(68, 160, 179, .06);
+			--color-dark: rgba(68, 160, 179, .5);
+			--color-semidark: rgba(68, 160, 179, .5);
+
+			text-align: center;
+			margin: 60px 0 0 0;
+			font-family: 'Segoe UI';
+			font-size: 14px;
+		}
+
+		.lowin .lowin-wrapper {
+			transition: all 1s;
+			-webkit-perspective: 1000px;
+			perspective: 1000px;
+			position: relative;
+			height: 100%;
+			width: 360px;
+			margin: 0 auto;
+		}
+		.lowin .lowin-box {
+			width: 100%;
+			position: absolute;
+			left: 0;
+		}
+
+		.lowin .lowin-box-inner {
+			background-color: #fff;
+			box-shadow: 0 7px 25px rgba(0, 0, 0, .08);
+			padding: 60px 25px 25px 25px;
+			text-align: left;
+			border-radius: 3px;
+		}
+		.lowin .lowin-box p {
+			color: var(--color-semidark);
+			font-weight: 700;
+			margin-bottom: 20px;
+			text-align: center;
+		}
+
+		.lowin .lowin-box .lowin-group {
+			margin-bottom: 30px;
+		}
+
+		.lowin .lowin-box label {
+			margin-bottom: 5px;
+			display: inline-block;
+			width: 100%;
+			color: var(--color-semidark);
+			font-weight: 700;
+		}
+
+		.lowin .lowin-box .lowin-input {
+			box-sizing: border-box;
+			background-color: var(--color-grey);
+			color: var(--color-dark);
+			border: none;
+			border-radius: 3px;
+			padding: 15px 20px;
+			width: 100%;
+			outline: 0;
+		}
+
+		.lowin .lowin-box .lowin-input::-webkit-input-placeholder {
+			color: #ccc;
+		}
+
+		.lowin .lowin-box .lowin-btn {
+			display: inline-block;
+			width: 100%;
+			border: none;
+			color: #fff;
+			padding: 15px;
+			border-radius: 3px;
+			background-color: var(--color-primary);
+			box-shadow: 0 2px 7px var(--color-semidark);
+			font-weight: 700;
+			outline: 0;
+			cursor: pointer;
+			transition: all .5s;
+		}
+
+		.lowin .lowin-box .lowin-btn:active {
+			box-shadow: none;
+		}
+
+		.lowin .lowin-box .lowin-btn:hover {
+			opacity: .9;
+		}
+		@media screen and (max-width: 320px) {
+			.lowin .lowin-wrapper {
+				width: 100%;
+			}
+
+			.lowin .lowin-box {
+				padding: 0 10px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="lowin">
+		<div class="lowin-wrapper">
+			<div class="lowin-box lowin-register">
+				<div class="lowin-box-inner">
+					<form>
+						<div class="lowin-group">
+							<label>联系电话</label>
+							<input id="phone" type="text" class="lowin-input" placeholder="联系电话" maxlength="11" autocomplete="off">
+						</div>
+						<div class="lowin-group">
+							<label>用户密码</label>
+							<input id="pwd" type="password" class="lowin-input" placeholder="用户密码" maxlength="50">
+						</div>
+						<div class="lowin-group">
+							<label>验证码</label>
+							<input id="google_code" type="text" class="lowin-input" placeholder="谷歌验证码，没有请忽略" autocomplete="off">
+						</div>
+						<button id="btn" class="lowin-btn">登录</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		$('#btn').click(function () {
+			var phone = $('#phone').val();
+			var pwd = $('#pwd').val();
+			//        var captcha = $('#captcha').val();
+			var google_code = $('#google_code').val();
+
+			if (phone.length == 0) {
+				swal(
+					'请输入手机号'
+				);
+				return;
+			}
+
+			if (pwd.length == 0) {
+				swal(
+					'请输入密码'
+				);
+				return;
+			}
+
+			var loadding = layerLoading()
+			$.ajax({
+				type: 'post',
+				url: "{{ route('adminDoLogin') }}",
+				data: {
+					'phone': phone,
+					'pwd': pwd,
+					'google_code': google_code,
+					'_token': '{{csrf_token()}}'
+				},
+				dataType: 'json',
+				async: true,
+				success: function (result) {
+					var code = result.code;
+					var msg = result.msg
+					if (code == 200) {
+						// 操作成功.
+						window.location.href = result.redirect
+					} else {
+						layer.close(loadding);
+						// 操作失败.
+						$('#img').click();
+						swal(msg);
+
+					}
+				},
+			});
+
+		});
+
+
+		$('input').keyup(function (event) {
+			var ent = event || window.event;
+			if (ent.keyCode == 13) {
+				$('#btn').trigger('click')
+			}
+		})
+	</script>
+</body>
+
+</html>

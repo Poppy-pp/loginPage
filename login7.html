@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ env("APP_NAME") }}</title>
+	<script src="/assets/js/sweetalert2.min.js"></script>
+	<link rel="stylesheet" href="/assets/css/sweetalert2.min.css">
+	<script src="/assets/js/jquery.min.js"></script>
+	<link rel="stylesheet" type='text/css' href="/assets/css/bootstrap.css?v=2019">
+	<script src="/assets/vendor/layer-v3.1.1/layer.js"></script>
+	<script src="/assets/js/help.js"></script>
+	<style>
+		body,
+		html {
+			height: 100%;
+			margin: 0 auto;
+			font-family: "Microsoft YaHei", "微软雅黑";
+			font-size: 62.5%;
+			background: #c1bdba;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.form {
+			background: rgba(19, 35, 47, 0.8);
+			padding: 40px 20px;
+			width: 350px;
+			margin: 0px auto;
+			border-radius: 4px;
+			box-shadow: 0 4px 10px 4px rgba(19, 35, 47, 0.3);
+		}
+		h1 {
+			text-align: center;
+			color: #1ab188;
+			font-size: 3em;
+			margin-top: 0
+		}
+		input {
+			box-sizing: border-box;
+			font-size: 2em;
+			display: block;
+			width: 100%;
+			height: 100%;
+			padding: 10px;
+			background: none;
+			border: 1px solid #a0b3b0;
+			color: #ffffff;
+			border-radius: 0;
+    		margin-bottom: 10px;
+			transition: border-color .25s ease, box-shadow .25s ease;
+		}
+		input:focus{
+			outline: 0;
+			border-color: #1ab188;
+		}
+		.button {
+			width: 100%;
+			border: 0;
+			outline: none;
+			border-radius: 0;
+			padding: 10px 0;
+			font-size: 2em;
+			background: #1ab188;
+			color: #ffffff;
+			transition: all 0.5s ease;
+			-webkit-appearance: none;
+		}
+		.button:hover,
+		.button:focus {
+			background: #179b77;
+		}
+		@media screen and (min-width: 320px) and (max-width:390px) {
+			.form {
+				width: 240px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="form">
+		<h1>管理员总后台</h1>
+		<div id="login">
+			<form>
+				<input type="text" id="phone"  placeholder="联系电话" maxlength="11" required  autocomplete="off"/>
+				<input type="password" id="pwd" placeholder="用户密码" maxlength="50" required />
+				<input type="text" id="google_code" value="" placeholder="谷歌验证码，没有请忽略" autocomplete="off"/>
+				<button type="submit" class="button" >登录</button>
+			</form>
+		</div>
+	</div>
+</body>
+<script>
+	$('#btn').click(function () {
+		var phone = $('#phone').val();
+		var pwd = $('#pwd').val();
+		//        var captcha = $('#captcha').val();
+		var google_code = $('#google_code').val();
+
+		if (phone.length == 0) {
+			swal(
+				'请输入手机号'
+			);
+			return;
+		}
+
+		if (pwd.length == 0) {
+			swal(
+				'请输入密码'
+			);
+			return;
+		}
+
+		var loadding = layerLoading()
+		$.ajax({
+			type: 'post',
+			url: "{{ route('adminDoLogin') }}",
+			data: {
+				'phone': phone,
+				'pwd': pwd,
+				'google_code': google_code,
+				'_token': '{{csrf_token()}}'
+			},
+			dataType: 'json',
+			async: true,
+			success: function (result) {
+				var code = result.code;
+				var msg = result.msg
+				if (code == 200) {
+					// 操作成功.
+					window.location.href = result.redirect
+				} else {
+					layer.close(loadding);
+					// 操作失败.
+					$('#img').click();
+					swal(msg);
+
+				}
+			},
+		});
+
+	});
+
+
+	$('input').keyup(function (event) {
+		var ent = event || window.event;
+		if (ent.keyCode == 13) {
+			$('#btn').trigger('click')
+		}
+	})
+</script>
+
+</html>

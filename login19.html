@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ env("APP_NAME") }}</title>
+	<script src="/assets/js/sweetalert2.min.js"></script>
+	<link rel="stylesheet" href="/assets/css/sweetalert2.min.css">
+	<script src="/assets/js/jquery.min.js"></script>
+	<link rel="stylesheet" type='text/css' href="/assets/css/bootstrap.css?v=2019">
+	<script src="/assets/vendor/layer-v3.1.1/layer.js"></script>
+	<script src="/assets/js/help.js"></script>
+	<style>
+		body,
+		html {
+			height: 100%;
+			margin: 0 auto;
+			font-family: "Microsoft YaHei", "微软雅黑";
+			font-size: 62.5%;
+			background: #b2e1d7;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.login {
+			width: 340px;
+			border-radius: 20px;
+			padding: 20px;
+			box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset, 0px 0px 2px rgba(0, 0, 0, 0.5);
+		}
+		.login h1 {
+			color: white;
+			font-size:3em;
+			margin: 0 0 15px;
+			text-align: center;
+		}
+		.form-item {
+			margin: 0 auto;
+			padding-bottom: 20px;
+		}
+		.form-item input {
+			box-sizing: border-box;
+			width:100%;
+			height: 45px;
+			padding-left: 20px;
+			border: 1px solid #fff;
+			border-radius: 25px;
+			font-size: 2em;
+			background-color: transparent;
+			outline: none;
+		}
+		.form-item button {
+			width: 100%;
+			height: 45px;
+			border: 0;
+			border-radius: 25px;
+			font-size: 2em;
+			color: #1f6f4a;
+			outline: none;
+			cursor: pointer;
+			background-color: #fff;
+		}
+		.form-item button:hover{
+			background-color: #f0ecec;
+		}
+
+		@media screen and (min-width: 320px) and (max-width:390px) {
+			.login {
+				width: 250px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="login">
+		<h1>管理员总后台</h1>
+		<div class="form-item">
+			<input type="text" id="phone" placeholder="联系电话" maxlength="11" autocomplete="off">
+		</div>
+		<div class="form-item">
+			<input type="password" id="pwd" placeholder="用户密码" maxlength="50">
+		</div>
+		<div class="form-item">
+			<input type="text" id="google_code" value="" placeholder="谷歌验证码，没有请忽略" autocomplete="off">
+		</div>
+		<div class="form-item">
+			<button id="submit">登 录</button>
+		</div>
+	</div>
+</body>
+<script>
+	$('#btn').click(function () {
+		var phone = $('#phone').val();
+		var pwd = $('#pwd').val();
+		//        var captcha = $('#captcha').val();
+		var google_code = $('#google_code').val();
+
+		if (phone.length == 0) {
+			swal(
+				'请输入手机号'
+			);
+			return;
+		}
+
+		if (pwd.length == 0) {
+			swal(
+				'请输入密码'
+			);
+			return;
+		}
+
+		var loadding = layerLoading()
+		$.ajax({
+			type: 'post',
+			url: "{{ route('adminDoLogin') }}",
+			data: {
+				'phone': phone,
+				'pwd': pwd,
+				'google_code': google_code,
+				'_token': '{{csrf_token()}}'
+			},
+			dataType: 'json',
+			async: true,
+			success: function (result) {
+				var code = result.code;
+				var msg = result.msg
+				if (code == 200) {
+					// 操作成功.
+					window.location.href = result.redirect
+				} else {
+					layer.close(loadding);
+					// 操作失败.
+					$('#img').click();
+					swal(msg);
+
+				}
+			},
+		});
+
+	});
+
+
+	$('input').keyup(function (event) {
+		var ent = event || window.event;
+		if (ent.keyCode == 13) {
+			$('#btn').trigger('click')
+		}
+	})
+</script>
+
+</html>

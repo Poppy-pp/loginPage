@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ env("APP_NAME") }}</title>
+	<script src="/assets/js/sweetalert2.min.js"></script>
+	<link rel="stylesheet" href="/assets/css/sweetalert2.min.css">
+	<script src="/assets/js/jquery.min.js"></script>
+	<link rel="stylesheet" type='text/css' href="/assets/css/bootstrap.css?v=2019">
+	<script src="/assets/vendor/layer-v3.1.1/layer.js"></script>
+	<script src="/assets/js/help.js"></script>
+	<style>
+		body,
+		html {
+			height: 100%;
+			margin: 0 auto;
+			font-family: "Microsoft YaHei", "微软雅黑";
+			font-size: 62.5%;
+			background: #eee;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.login {
+			width: 340px;
+			padding: 3em 2em 2em 2em;
+			background: #fafafa;
+			border: 1px solid #ebebeb;
+			box-shadow: rgba(0, 0, 0, 0.14902) 0px 1px 1px 0px, rgba(0, 0, 0, 0.09804) 0px 1px 2px 0px;
+		}
+		.login h1 {
+			color: #666;
+			font-size: 3em;
+			margin: 0 0 15px;
+			text-align: center;
+		}
+		.group {
+			position: relative;
+			margin-bottom: 25px;
+		}
+		input {
+			box-sizing: border-box;
+			font-size: 2em;
+			padding: 10px 10px 10px 5px;
+			-webkit-appearance: none;
+			display: block;
+			background: #fafafa;
+			color: #636363;
+			width: 100%;
+			border: none;
+			outline: none;
+			border-bottom: 1px solid #757575;
+		}
+		label {
+			color: #999;
+			font-size: 2em;
+			position: absolute;
+			pointer-events: none;
+			left: 5px;
+			top: 10px;
+			transition: all 0.2s ease;
+		}
+		input:focus~label {
+			top: -20px;
+			-webkit-transform: scale(.75);
+			transform: scale(.75);
+			left: -2px;
+			color: #4a89dc;
+		}
+		.bar {
+			position: relative;
+			display: block;
+			width: 100%;
+		}
+		.bar:before, .bar:after {
+			content: '';
+			height: 2px;
+			width: 0;
+			bottom: 1px;
+			position: absolute;
+			background: #4a89dc;
+			transition: all 0.2s ease;
+		}
+		.bar:before {
+			left: 50%;
+		}
+		.bar:after {
+			right: 50%;
+		}
+		input:focus~.bar:before, input:focus~.bar:after {
+			width: 50%;
+		}
+		.button {
+			padding: 12px 24px;
+			margin: .3em 0 1em 0;
+			width: 100%;
+			color: #fff;
+			font-size: 2em;
+			background: transparent;
+			border: 0;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			outline: 0;
+			background: #4a89dc;
+		}
+		.button:hover {
+			background: #6fa0e1;
+		}
+		@media screen and (min-width: 320px) and (max-width:390px) {
+			.login {
+				width: 250px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="login">
+		<h1>管理员总后台</h1>
+		<form>
+			<div class="group">
+				<input type="text" id="phone" maxlength="11" autocomplete="off">
+				<span class="bar"></span>
+				<label>联系电话</label>
+			</div>
+			<div class="group">
+				<input type="password" id="pwd"  maxlength="50">
+				<span class="bar"></span>
+				<label>用户密码</label>
+			</div>
+			<div class="group">
+				<input type="text" id="google_code" value="" autocomplete="off">
+				<span class="bar"></span>
+				<label>验证码</label>
+			</div>
+			<button id="btn" type="button" class="button">登录</button>
+		</form>
+	</div>
+</body>
+<script>
+	$('#btn').click(function () {
+		var phone = $('#phone').val();
+		var pwd = $('#pwd').val();
+		//        var captcha = $('#captcha').val();
+		var google_code = $('#google_code').val();
+
+		if (phone.length == 0) {
+			swal(
+				'请输入手机号'
+			);
+			return;
+		}
+
+		if (pwd.length == 0) {
+			swal(
+				'请输入密码'
+			);
+			return;
+		}
+
+		var loadding = layerLoading()
+		$.ajax({
+			type: 'post',
+			url: "{{ route('adminDoLogin') }}",
+			data: {
+				'phone': phone,
+				'pwd': pwd,
+				'google_code': google_code,
+				'_token': '{{csrf_token()}}'
+			},
+			dataType: 'json',
+			async: true,
+			success: function (result) {
+				var code = result.code;
+				var msg = result.msg
+				if (code == 200) {
+					// 操作成功.
+					window.location.href = result.redirect
+				} else {
+					layer.close(loadding);
+					// 操作失败.
+					$('#img').click();
+					swal(msg);
+
+				}
+			},
+		});
+
+	});
+
+
+	$('input').keyup(function (event) {
+		var ent = event || window.event;
+		if (ent.keyCode == 13) {
+			$('#btn').trigger('click')
+		}
+	})
+</script>
+
+</html>
